@@ -70,9 +70,6 @@ public class CameraActivity extends AppCompatActivity {
             }
         }
         else {
-            //previewfunction();
-            //imageAnaylsisSetup();
-            //imageCaptureSetup();
             startCamera();
         }
         binding.imageCaptureButton.setOnClickListener(new View.OnClickListener() {
@@ -114,35 +111,7 @@ public class CameraActivity extends AppCompatActivity {
             }
         });
     }
-    public void imageAnaylsisSetup(){
-         imageAnalysis =
-                new ImageAnalysis.Builder()
-                        // enable the following line if RGBA output is needed.
-                        //.setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-                        .setTargetResolution(new Size(1280, 720))
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build();
 
-        imageAnalysis.setAnalyzer(getMainExecutor(), imageProxy -> {
-            int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
-            // insert your code here.
-
-            // after done, release the ImageProxy object
-            imageProxy.close();
-        });
-        try {
-            // Unbind use cases before rebinding
-            cameraProvider.unbindAll();
-
-            // Bind use cases to camera
-            cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageAnalysis);
-
-        } catch(Exception e) {
-            //Log.i(, "Use case binding failed", exc)
-            Toast.makeText(this, "error occurred in image analysis", Toast.LENGTH_SHORT).show();
-        }
-    }
     public void startCamera() {
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
@@ -199,90 +168,9 @@ public class CameraActivity extends AppCompatActivity {
 
 
     }
-    public void previewfunction(){
-        cameraProviderFuture=ProcessCameraProvider.getInstance(this);
-        cameraProviderFuture.addListener(() -> {
-            try {
-                cameraProvider = cameraProviderFuture.get();
-                bindPreview(cameraProvider);
-            } catch (ExecutionException | InterruptedException e) {
-                // No errors need to be handled for this Future.
-                // This should never be reached.
-            }
-        }, ContextCompat.getMainExecutor(this));
 
 
-    }
-    public void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
-        preview = new Preview.Builder()
-                .build();
 
-        cameraSelector = new CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                .build();
-        preview.setSurfaceProvider(binding.viewFinder.getSurfaceProvider());
-        try {
-            cameraProvider.unbindAll();
-            camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview);
-        }catch (Exception e){
-            Log.i("Error","Occurred");
-            Toast.makeText(this, "Some error occurred", Toast.LENGTH_SHORT).show();
-        }
-    }
-    public void imageCaptureSetup(){
-        imageCapture =
-                new ImageCapture.Builder()
-                        .setTargetRotation(getWindowManager().getDefaultDisplay().getRotation())
-                        .build();
-
-        try {
-            // Unbind use cases before rebinding
-            cameraProvider.unbindAll();
-
-            // Bind use cases to camera
-            cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture);
-
-        } catch(Exception e) {
-            //Log.i(, "Use case binding failed", exc)
-            Toast.makeText(this, "error occurred in image capture", Toast.LENGTH_SHORT).show();
-        }
-    }
-   /* public void takePhoto(View view){
-        Log.i("info","came here1");
-        String name = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        ContentValues contentValues = new ContentValues();
-
-        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-
-        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, name);
-
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-
-            contentValues.put(MediaStore.Images.Media.DATE_TAKEN, name);
-
-            contentValues.put(MediaStore.Images.Media.RELATIVE_PATH,
-                    "Pictures/Camera-X");
-
-
-        }
-        Log.i("info","came here2");
-        ImageCapture.OutputFileOptions outputFileOptions =
-                new ImageCapture.OutputFileOptions.Builder(getContentResolver(),MediaStore.Images.Media.EXTERNAL_CONTENT_URI,contentValues).build();
-        imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(this),
-                new ImageCapture.OnImageSavedCallback() {
-                    @Override
-                    public void onImageSaved(ImageCapture.OutputFileResults outputFileResults) {
-                        Toast.makeText(CameraActivity.this, "Photo Captured", Toast.LENGTH_SHORT).show();
-                    }
-                    @Override
-                    public void onError(ImageCaptureException error) {
-                        Toast.makeText(CameraActivity.this, "Failed to Capture", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-        Log.i("info","came here3");
-    }*/
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
